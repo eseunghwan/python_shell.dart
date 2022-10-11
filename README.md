@@ -1,11 +1,12 @@
 <h1 align="center">
     <br />
     python_shell
-    <br />
-    <font style="font-size:18px;">Python Environment Manager and Executor for dart and flutter</font>
-    <br />
-    <br />
 </h1>
+<h3 align="center">
+    Python Environment Manager and Executor for dart and flutter
+    <br />
+    <br />
+</h3>
 <br />
 
 Available for:
