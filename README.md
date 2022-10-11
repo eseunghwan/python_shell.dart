@@ -26,7 +26,11 @@ Supported Platforms:
 <br />
 
 # Install
-add dependency to 'pubspec.yaml'
+- add via cli
+```iterm
+flutter pub add python_shell
+```
+- add dependency to 'pubspec.yaml'
 ```yaml
 dependencies:
     [other dependencies...]
