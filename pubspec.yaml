@@ -8,8 +8,10 @@ environment:
   sdk: '>=2.18.2 <3.0.0'
   flutter: ">=2.10.0"
 
-# dependencies:
-#   path: ^1.8.0
+platforms:
+  macos:
+  linux:
+  windows:
 
 dev_dependencies:
   flutter_test:
