@@ -1,39 +1,76 @@
-<!-- 
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+<h1 align="center">
+    <br />
+    python_shell
+    <br />
+    <font style="font-size:18px;">Python Environment Manager and Executor for dart and flutter</font>
+    <br />
+    <br />
+</h1>
+<br />
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages). 
+Available for:
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages). 
--->
+- dart, flutter
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
 
-## Features
+Supported Platforms:
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+- Windows 10+ (x86, amd64, arm64)
+- Linux Distos (amd64, arm64)
+- OSX 11+ (amd64, arm64)
 
-## Getting started
+<br />
+<hr>
+<br />
+<br />
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+# Install
+add dependency to 'pubspec.yaml'
+```yaml
+dependencies:
+    [other dependencies...]
 
-## Usage
-
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
-
-```dart
-const like = 'sample';
+    python_shell:
+        git:
+            url: git://github.com/eseunghwan/python_shell.dart.git
+            ref: master
 ```
 
-## Additional information
+<br /><br />
 
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.
+# Usage
+- basic usage
+```dart
+import "package:python_shell/python_shell.dart";
+
+var shell = PythonShell();
+await shell.initializeShell();
+
+shell.runString("""
+print("in python!")
+""");
+```
+
+<br />
+
+- onMessage, onError, onComplete
+```dart
+// setups like above ...
+shell.runString(
+    "{pythonCode}",
+    onMessage: (message) {
+        // if `echo` is `true`, log to console automatically
+        print("message!");
+    },
+    onError: (e, s) {
+        print("error!");
+    },
+    onComplete: () {
+        print("completed!");
+    }
+);
+```
+
+<br />
+
+for further informations, refers to [shell.dart](https://github.com/eseunghwan/python_shell.dart/blob/master/lib/src/shell.dart)
