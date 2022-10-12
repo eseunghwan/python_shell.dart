@@ -4,9 +4,10 @@ import "package:path/path.dart" as path;
 import "package:intl/intl.dart";
 
 import "utils.dart";
+import 'shell_listener.dart';
 
 
-/// PythonShell Configurations
+/// PythonShell Configuration Class
 /// * [defaultPythonPath]: Default python path to use
 /// * [defaultPythonVersion]: Default python version to use
 /// * [downloadPython]: (Windows Only!)Decide whether to download python
@@ -32,134 +33,127 @@ class PythonShellConfig {
         this.defaultWorkingDirectory,
         this.pythonRequireFile,
         this.pythonRequires
-    });
+    }) {
+        if ((Platform.isLinux || Platform.isMacOS)) {
+            if (["python", "python2", "python3"].contains(defaultPythonPath)) {
+                defaultPythonPath = "/usr/bin/$defaultPythonPath";
+            }
+            else if (!File(defaultPythonPath).existsSync()) {
+                defaultPythonPath = "/usr/bin/python3";
+            }
+        }
+    }
 }
 
+/// PythonShell Listener Class
+/// arguments:
+/// * [messageCallback]: callback for messages
+/// * [errorCallback]: callback for error handle
+/// * [completeCallback]: callback for shell finished
+/// 
+/// properties:
+/// * [onMessage]: same as messageCallback
+/// * [onError]: same as errorCallback
+/// * [onComplete]: same as completeCallback
+class ShellListener {
+    Function(String) onMessage;
+    Function(Object, StackTrace) onError;
+    Function() onComplete;
+
+    ShellListener({
+        Function(String)? messageCallback, Function(Object, StackTrace)? errorCallback, Function()? completeCallback
+    }): onMessage = messageCallback ?? emptyMessageCallback, onError = errorCallback ?? emptyErrorCallback, onComplete = completeCallback ?? emptyCompleteCallback;
+}
+
+/// PythonShell Class
+/// * [shellConfig]: PythonShellConfig instance
+/// * [createDefaultEnv]: flag for create default environment or not
 class PythonShell {
     bool createDefaultEnv;
     PythonShellConfig config;
 
     PythonShell({PythonShellConfig? shellConfig, this.createDefaultEnv = false }): config = shellConfig ?? PythonShellConfig();
 
-    Future<void> initializeShell({ bool? createDefaultEnv }) async {
+    Future<void> initialize({ bool? createDefaultEnv }) async {
         await initializeApp(config, createDefaultEnv ?? this.createDefaultEnv);
     }
 
-    Future<void> runFile(String pythonFile, { String? workingDirectory, bool createInstance = false, bool waitUntil = false, Function(String)? onMessage, Function(Object, StackTrace)? onError, Function()? onComplete, bool echo = true }) async {
+    Future<Process> runFile(String pythonFile, { String? workingDirectory, bool createInstance = false, bool echo = true, ShellListener? listener }) async {
+        listener = listener ?? ShellListener();
+        Process process;
+
         if (createInstance) {
             var instanceMaps = createShellInstance(config);
-            if (waitUntil) {
-                if (onMessage != null) {
-                    print("If `echo` is true, `onMessage` is not invoked");
-                }
-
-                try {
-                    Process.runSync(instanceMaps["python"]!, [ "-u", pythonFile ], workingDirectory: config.defaultWorkingDirectory ?? workingDirectory, runInShell: true);
-                    if (onComplete != null) {
-                        onComplete();
-                    }
-                }
-                on Exception catch (e, s) {
-                    if (onError != null) {
-                        onError(e, s);
-                    }
-                }
+            process = await Process.start(instanceMaps["python"]!, [ "-u", pythonFile ], mode: ProcessStartMode.detachedWithStdio, workingDirectory: config.defaultWorkingDirectory ?? workingDirectory);
+            
+            if (echo) {
+                process.stdout.listen(
+                    (event) {
+                        String message = String.fromCharCodes(event).trim();
+                        print(message);
+                        listener!.onMessage(message);
+                    },
+                    onError: listener.onError,
+                    onDone: listener.onComplete
+                );
             }
             else {
-                var process = await Process.start(instanceMaps["python"]!, [ "-u", pythonFile ], mode: ProcessStartMode.detachedWithStdio, workingDirectory: config.defaultWorkingDirectory ?? workingDirectory);
-                
-                if (echo) {
-                    process.stdout.listen(
-                        (event) {
-                            String message = String.fromCharCodes(event).trim();
-                            print(message);
-                            if (onMessage != null) {
-                                onMessage(message);
-                            }
-                        },
-                        onError: onError,
-                        onDone: onComplete
-                    );
-                }
-                else {
-                    process.stdout.listen(
-                        (event) {
-                            if (onMessage != null) {
-                                onMessage(String.fromCharCodes(event).trim());
-                            }
-                        },
-                        onError: onError,
-                        onDone: onComplete
-                    );
-                }
+                process.stdout.listen(
+                    (event) {
+                        listener!.onMessage(String.fromCharCodes(event).trim());
+                    },
+                    onError: listener.onError,
+                    onDone: listener.onComplete
+                );
             }
         }
         else {
-            if (waitUntil) {
-                if (onMessage != null) {
-                    print("If `echo` is true, `onMessage` is not invoked");
-                }
+            process = await Process.start(config.defaultPythonEnvPath!, [ "-u", pythonFile ], mode: ProcessStartMode.detachedWithStdio, workingDirectory: config.defaultWorkingDirectory ?? workingDirectory, runInShell: true);
 
-                try {
-                    Process.runSync(config.defaultPythonEnvPath!, [ "-u", pythonFile ], workingDirectory: config.defaultWorkingDirectory ?? workingDirectory, runInShell: true);
-                    if (onComplete != null) {
-                        onComplete();
-                    }
-                }
-                on Exception catch (e, s) {
-                    if (onError != null) {
-                        onError(e, s);
-                    }
-                }
+            if (echo) {
+                process.stdout.listen(
+                    (event) {
+                        String message = String.fromCharCodes(event).trim();
+                        print(message);
+                        listener!.onMessage(message);
+                    },
+                    onError: listener.onError,
+                    onDone: listener.onComplete
+                );
             }
             else {
-                var process = await Process.start(config.defaultPythonEnvPath!, [ "-u", pythonFile ], mode: ProcessStartMode.detachedWithStdio, workingDirectory: config.defaultWorkingDirectory ?? workingDirectory, runInShell: true);
-
-                if (echo) {
-                    process.stdout.listen(
-                        (event) {
-                            String message = String.fromCharCodes(event).trim();
-                            print(message);
-                            if (onMessage != null) {
-                                onMessage(message);
-                            }
-                        },
-                        onError: onError,
-                        onDone: onComplete
-                    );
-                }
-                else {
-                    process.stdout.listen(
-                        (event) {
-                            if (onMessage != null) {
-                                onMessage(String.fromCharCodes(event).trim());
-                            }
-                        },
-                        onError: onError,
-                        onDone: onComplete
-                    );
-                }
+                process.stdout.listen(
+                    (event) {
+                        listener!.onMessage(String.fromCharCodes(event).trim());
+                    },
+                    onError: listener.onError,
+                    onDone: listener.onComplete
+                );
             }
         }
+
+        return process;
     }
 
-    Future<void> runString(String pythonCode, { bool createInstance = false, bool waitUntil = false, Function(String)? onMessage, Function(Object, StackTrace)? onError, Function()? onComplete, bool echo = true }) async {
+    Future<Process> runString(String pythonCode, { bool createInstance = false, bool echo = true, ShellListener? listener }) async {
         String tempPythonFile = path.join(config.tempDir!, "${DateFormat("yyyy.MM.dd.HH.mm.ss").format(DateTime.now())}.py");
         File(tempPythonFile).writeAsStringSync(pythonCode);
-        await runFile(
-            tempPythonFile, createInstance: createInstance, waitUntil: waitUntil, echo: echo, onMessage: onMessage,
-            onError: (e, s) {
-                if (onError != null) {
-                    onError(e, s);
-                }
+
+        listener = listener ?? ShellListener();
+        ShellListener newListener = ShellListener(
+            messageCallback: listener.onMessage,
+            errorCallback: (e, s) {
+                listener!.onError(e, s);
                 File(tempPythonFile).deleteSync();
             },
-            onComplete: () {
-                if (onComplete != null) {
-                    onComplete();
-                }
+            completeCallback: () {
+                listener!.onComplete();
                 File(tempPythonFile).deleteSync();
             }
+        );
+
+        return await runFile(
+            tempPythonFile, createInstance: createInstance, echo: echo, listener: newListener
         );
     }
 

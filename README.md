@@ -10,12 +10,10 @@
 <br />
 
 Available for:
-
 - dart, flutter
 
 
 Supported Platforms:
-
 - Windows 10+ (x86, amd64, arm64)
 - Linux Distos (amd64, arm64)
 - OSX 11+ (amd64, arm64)
@@ -28,7 +26,7 @@ Supported Platforms:
 # Install
 - add via cli
 ```iterm
-flutter pub add python_shell
+flutter(dart) pub add python_shell
 ```
 - add dependency to 'pubspec.yaml'
 ```yaml
@@ -51,9 +49,7 @@ import "package:python_shell/python_shell.dart";
 var shell = PythonShell();
 await shell.initializeShell();
 
-shell.runString("""
-print("in python!")
-""");
+shell.runString("{pythonCode}");
 ```
 
 <br />
@@ -63,16 +59,18 @@ print("in python!")
 // setups like above ...
 shell.runString(
     "{pythonCode}",
-    onMessage: (message) {
-        // if `echo` is `true`, log to console automatically
-        print("message!");
-    },
-    onError: (e, s) {
-        print("error!");
-    },
-    onComplete: () {
-        print("completed!");
-    }
+    listener: ShellListener(
+        messageCallback: (message) {
+            // if `echo` is `true`, log to console automatically
+            print("message!");
+        },
+        errorCallback: (e, s) {
+            print("error!");
+        },
+        completeCallback: () {
+            print("complete!");
+        }
+    )
 );
 ```
 

@@ -8,7 +8,7 @@ void main() {
 
         setUp(() async {
             // Additional setup goes here.
-            await shell.initializeShell();
+            await shell.initialize();
 
             print(shell.config.defaultPythonPath);
             print(shell.config.defaultPythonVersion);
@@ -19,13 +19,13 @@ void main() {
         });
 
         test("runString", () {
-            shell.runString("print(1234)", waitUntil: true);
+            shell.runString("print(1234)");
         });
 
         test("runFile", () {
             var pythonFile = File("test.py");
             pythonFile.writeAsStringSync("print(1234)");
-            shell.runFile(pythonFile.path, waitUntil: true);
+            shell.runFile(pythonFile.path);
         });
     });
 }
