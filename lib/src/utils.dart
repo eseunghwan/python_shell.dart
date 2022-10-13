@@ -57,18 +57,6 @@ Map<String, String> createShellInstance(PythonShellConfig config, { String? inst
     };
 }
 
-Map<String, String> getShellInstance(PythonShellConfig config, String instanceName) {
-    String instanceDir = path.join(config.instanceDir!, instanceName);
-    if (Directory(instanceDir).existsSync()) {
-        return {
-            "dir": path.join(config.instanceDir!, instanceName), "python": getVirtualEnv(config, instanceName)
-        };
-    }
-    else {
-        return createShellInstance(config, instanceName: instanceName);
-    }
-}
-
 String createVirtualEnv(PythonShellConfig config, String instanceName, { List<String>? pythonRequires }) {
     pythonRequires = pythonRequires ?? config.pythonRequires;
 
@@ -88,6 +76,18 @@ String createVirtualEnv(PythonShellConfig config, String instanceName, { List<St
     return envPython;
 }
 
+Map<String, String> getShellInstance(PythonShellConfig config, String instanceName) {
+    String instanceDir = path.join(config.instanceDir!, instanceName);
+    if (Directory(instanceDir).existsSync()) {
+        return {
+            "dir": path.join(config.instanceDir!, instanceName), "python": getVirtualEnv(config, instanceName)
+        };
+    }
+    else {
+        return createShellInstance(config, instanceName: instanceName);
+    }
+}
+
 String getVirtualEnv(PythonShellConfig config, String instanceName) {
     String envDir;
     if (instanceName.toLowerCase() == "default") {
@@ -99,20 +99,6 @@ String getVirtualEnv(PythonShellConfig config, String instanceName) {
     }
 
     return Platform.isWindows ? path.join(envDir, "Scripts", "python.exe") : path.join(envDir, "bin", "python");
-}
-
-void installRequiresToEnv(PythonShellConfig config, String envPython, { List<String>? pythonRequires }) {
-    pythonRequires = pythonRequires ?? config.pythonRequires;
-
-    if (config.pythonRequireFile != null) {
-        Process.runSync(envPython, [ "-m", "pip", "install", "-r", config.pythonRequireFile! ], runInShell: true);
-    }
-    else if (pythonRequires != null) {
-        String tempPythonRequireFile = path.join(config.tempDir!, "${DateFormat("yyyy.MM.dd.HH.mm.ss").format(DateTime.now())}.txt");
-        File(tempPythonRequireFile).writeAsStringSync(pythonRequires.join("\n"));
-        Process.runSync(envPython, [ "-m", "pip", "install", "-r", tempPythonRequireFile ], runInShell: true);
-        File(tempPythonRequireFile).deleteSync();
-    }
 }
 
 Future<void> initializeApp(PythonShellConfig config, bool createDefaultEnv) async {
@@ -167,6 +153,20 @@ Future<void> initializeApp(PythonShellConfig config, bool createDefaultEnv) asyn
     else {
         config.defaultPythonEnvPath = Platform.isWindows ? path.join(defaultEnvDir, "Scripts", "python.exe") : path.join(defaultEnvDir, "bin", "python");
         installRequiresToEnv(config, config.defaultPythonEnvPath!);
+    }
+}
+
+void installRequiresToEnv(PythonShellConfig config, String envPython, { List<String>? pythonRequires }) {
+    pythonRequires = pythonRequires ?? config.pythonRequires;
+
+    if (config.pythonRequireFile != null) {
+        Process.runSync(envPython, [ "-m", "pip", "install", "-r", config.pythonRequireFile! ], runInShell: true);
+    }
+    else if (pythonRequires != null) {
+        String tempPythonRequireFile = path.join(config.tempDir!, "${DateFormat("yyyy.MM.dd.HH.mm.ss").format(DateTime.now())}.txt");
+        File(tempPythonRequireFile).writeAsStringSync(pythonRequires.join("\n"));
+        Process.runSync(envPython, [ "-m", "pip", "install", "-r", tempPythonRequireFile ], runInShell: true);
+        File(tempPythonRequireFile).deleteSync();
     }
 }
 
