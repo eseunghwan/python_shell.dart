@@ -5,7 +5,16 @@
 
 ## 0.0.2
 - add 'ShellListener' class
-- remove 'waitUntil' from run functions.
-- merge 'onMessage', 'onError', 'onComplete' to 'ShellListener'.
+- remove 'waitUntil' parameter.
+- merge 'onMessage', 'onError', 'onComplete' parameters to 'ShellListener' parameter.
 - check 'defaultPythonPath' exists when initialize.
 - check pip can execute when initialize.
+
+<br />
+
+## 0.0.3
+- change 'createInstance' parameter to 'useInstance' parameter.
+- add 'instanceName' parameter.
+- change default virtual environment path from 'defaultEnv' to 'instances/default'.
+- 'clear' function now removes only instances except default.
+- 'runString' function now creates a temporary file in the 'instanceDir/temp' when using instance.

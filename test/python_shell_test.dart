@@ -6,7 +6,7 @@ void main() {
     group("python-shell tests", () {
         final PythonShell shell = PythonShell(shellConfig: PythonShellConfig());
 
-        setUp(() async {
+        setUpAll(() async {
             // Additional setup goes here.
             await shell.initialize();
 
@@ -15,17 +15,32 @@ void main() {
             print(shell.config.defaultPythonEnvPath);
             print(shell.config.pythonRequireFile);
             print(shell.config.pythonRequires);
-            print("python results: \n");
+            print("tests: \n");
         });
 
-        test("runString", () {
-            shell.runString("print(1234)");
+        test("runString", () async {
+            await shell.runString("print('in python!')");
         });
 
-        test("runFile", () {
+        test("runFile", () async {
             var pythonFile = File("test.py");
-            pythonFile.writeAsStringSync("print(1234)");
-            shell.runFile(pythonFile.path);
+            pythonFile.writeAsStringSync("print('in python!')");
+            await shell.runFile(pythonFile.path);
+        });
+
+        test("runString with new instance", () async {
+            await shell.runString("print('in python!')", useInstance: true);
+        });
+
+        test("runFile with new instance", () async {
+            var pythonFile = File("test.py");
+            pythonFile.writeAsStringSync("print('in python!')");
+            await shell.runFile(pythonFile.path, useInstance: true);
+        });
+
+        tearDownAll(() {
+            print("test over");
+            // shell.clear();
         });
     });
 }

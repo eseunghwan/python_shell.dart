@@ -1,12 +1,11 @@
 name: python_shell
 description: Python Environment Manager and Executor for dart and flutter
-version: 0.0.2
+version: 0.0.3
 repository: https://github.com/eseunghwan/python_shell.dart
 issue_tracker: https://github.com/eseunghwan/python_shell.dart/issues
 
 environment:
   sdk: '>=2.18.2 <3.0.0'
-  flutter: ">=2.10.0"
 
 platforms:
   macos:

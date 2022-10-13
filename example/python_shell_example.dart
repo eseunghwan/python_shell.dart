@@ -1,17 +1,21 @@
 import "package:python_shell/python_shell.dart";
-import 'package:python_shell/src/shell_listener.dart';
 
 void main() async {
-    var shell = PythonShell();
+    var shell = PythonShell(shellConfig: PythonShellConfig(
+        pythonRequires: [ "PySide6" ],
+        defaultWorkingDirectory: "example"
+    ));
     await shell.initialize();
 
-    shell.runString("""
-import os
+    await shell.runString("""
+import os, PySide6
 
-print(os.path.dirname(os.path.realpath(__file__)))
-""", listener: ShellListener(
-    completeCallback: () {
-        print("finished");
-    }
-));
+print("in python: ", os.getcwd())
+print("in python: ", PySide6)
+""", useInstance: true, instanceName: "testInstance1", listener: ShellListener(
+        completeCallback: () {
+            print(shell.resolved);
+            // shell.clear();
+        }
+    ));
 }
