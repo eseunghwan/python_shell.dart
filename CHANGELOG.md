@@ -18,3 +18,9 @@
 - change default virtual environment path from 'defaultEnv' to 'instances/default'.
 - 'clear' function now removes only instances except default.
 - 'runString' function now creates a temporary file in the 'instanceDir/temp' when using instance.
+
+<br />
+
+## 0.0.4
+- remove 'flutter' dependencies from 'pubspec'(for pub informations)
+- 'clear' function now removes sub directories, files from 'temp' not removes itself.

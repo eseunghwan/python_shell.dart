@@ -20,7 +20,7 @@ class PythonShell {
 
     bool get resolved => _runningProcesses.isEmpty;
 
-    void clear() {
+    void clear({ String instanceName = "default" }) {
         var instances = Directory(config.instanceDir!).listSync().whereType<Directory>().toList();
         instances.where(
             (instanceDir) => path.basename(instanceDir.path) != "default"
@@ -32,8 +32,13 @@ class PythonShell {
             }
         );
 
-        Directory(config.tempDir!).deleteSync(recursive: true);
-        Directory(config.tempDir!).createSync();
+        var temps = Directory(config.tempDir!).listSync();
+        temps.whereType<Directory>().forEach((directory) {
+            directory.deleteSync(recursive: true);
+        });
+        temps.whereType<File>().forEach((file) {
+            file.deleteSync();
+        });
     }
 
     Future<void> initialize({ bool? createDefaultEnv }) async {
@@ -142,8 +147,13 @@ class PythonShell {
     Future<Process> runString(String pythonCode, { bool useInstance = false, String? instanceName, bool echo = true, ShellListener? listener }) async {
         String tempPythonFileName = "${DateFormat("yyyy.MM.dd.HH.mm.ss").format(DateTime.now())}.py", tempPythonFile;
         if (useInstance) {
-            var instanceMaps = instanceName == null ? createShellInstance(config) : getShellInstance(config, instanceName);
-            tempPythonFile = path.join(instanceMaps["dir"]!, "temp", tempPythonFileName);
+            if (instanceName != null && instanceName.toLowerCase() == "default") {
+                tempPythonFile = path.join(config.tempDir!, tempPythonFileName);
+            }
+            else {
+                var instanceMaps = instanceName == null ? createShellInstance(config) : getShellInstance(config, instanceName);
+                tempPythonFile = path.join(instanceMaps["dir"]!, "temp", tempPythonFileName);
+            }
         }
         else {
             tempPythonFile = path.join(config.tempDir!, tempPythonFileName);

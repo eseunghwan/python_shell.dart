@@ -38,6 +38,23 @@ String checkPythonVersion(String rawPythonVersion) {
     return realPythonVersion;
 }
 
+void clearShellInstance(PythonShellConfig config, String instanceName) {
+    List<FileSystemEntity> tempFiles;
+    if (instanceName.toLowerCase() == "default") {
+        tempFiles = Directory(config.tempDir!).listSync();
+    }
+    else {
+        tempFiles = Directory(path.join(config.instanceDir!, instanceName)).listSync();
+    }
+
+    tempFiles.whereType<Directory>().forEach((directory) {
+        directory.deleteSync(recursive: true);
+    });
+    tempFiles.whereType<File>().forEach((file) {
+        file.deleteSync();
+    });
+}
+
 Map<String, String> createShellInstance(PythonShellConfig config, { String? instanceName }) {
     instanceName = instanceName ?? DateFormat("yyyy.MM.dd.HH.mm.ss").format(DateTime.now());
     String instanceDir = path.join(config.instanceDir!, instanceName), envPython;
@@ -48,6 +65,7 @@ Map<String, String> createShellInstance(PythonShellConfig config, { String? inst
         envPython = createVirtualEnv(config, instanceName);
     }
     else {
+        clearShellInstance(config, instanceName);
         envPython = getVirtualEnv(config, instanceName);
     }
 
@@ -74,6 +92,15 @@ String createVirtualEnv(PythonShellConfig config, String instanceName, { List<St
     installRequiresToEnv(config, envPython, pythonRequires: pythonRequires);
 
     return envPython;
+}
+
+void deleteShellInstance(PythonShellConfig config, String instanceName) {
+    if (instanceName.toLowerCase() == "default") {
+        Directory(path.join(config.instanceDir!, "default")).deleteSync(recursive: true);
+    }
+    else {
+        Directory(path.join(config.instanceDir!, instanceName)).deleteSync(recursive: true);
+    }
 }
 
 Map<String, String> getShellInstance(PythonShellConfig config, String instanceName) {
