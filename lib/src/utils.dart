@@ -38,13 +38,17 @@ String checkPythonVersion(String rawPythonVersion) {
     return realPythonVersion;
 }
 
+String getPythonPthFile(PythonShellConfig config, String pythonDir) {
+    return path.join(pythonDir, "python${config.defaultPythonVersion.replaceAll(".${config.defaultPythonVersion.split(".").last}", "").replaceAll(".", "")}._pth");
+}
+
 void clearShellInstance(PythonShellConfig config, String instanceName) {
     List<FileSystemEntity> tempFiles;
     if (instanceName.toLowerCase() == "default") {
-        tempFiles = Directory(config.tempDir!).listSync();
+        tempFiles = Directory(path.join(config.instanceDir!, "default", "temp")).listSync();
     }
     else {
-        tempFiles = Directory(path.join(config.instanceDir!, instanceName)).listSync();
+        tempFiles = Directory(path.join(config.instanceDir!, instanceName, "temp")).listSync();
     }
 
     tempFiles.whereType<Directory>().forEach((directory) {
@@ -80,14 +84,14 @@ String createVirtualEnv(PythonShellConfig config, String instanceName, { List<St
 
     String envDir;
     if (instanceName.toLowerCase() == "default") {
-        envDir = path.join(config.instanceDir!, "default");
+        envDir = path.join(config.instanceDir!, "default", "env");
         config.defaultPythonEnvPath = Platform.isWindows ? path.join(envDir, "Scripts", "python.exe") : path.join(envDir, "bin", "python");
     }
     else {
         envDir = path.join(config.instanceDir!, instanceName, "env");
     }
 
-    Process.runSync(config.defaultPythonPath, [ "-m", "virtualenv", envDir ], runInShell: true);
+    Process.runSync(config.defaultPythonPath, [ "-m", "virtualenv", envDir ]);
     String envPython = Platform.isWindows ? path.join(envDir, "Scripts", "python.exe") : path.join(envDir, "bin", "python");
     installRequiresToEnv(config, envPython, pythonRequires: pythonRequires);
 
@@ -158,8 +162,11 @@ Future<void> initializeApp(PythonShellConfig config, bool createDefaultEnv) asyn
             await Dio().download("https://www.python.org/ftp/python/${config.defaultPythonVersion}/python-${config.defaultPythonVersion}-embed-amd64.zip", pythonBinaryFile);
             await extractFileToDisk(pythonBinaryFile, pythonDir);
             File(pythonBinaryFile).deleteSync();
-            config.defaultPythonPath = path.join(pythonDir, "python.exe");
+
+            File(getPythonPthFile(config, pythonDir)).writeAsStringSync(File(getPythonPthFile(config, pythonDir)).readAsStringSync().replaceAll("#import site", "import site"));
         }
+
+        config.defaultPythonPath = path.join(pythonDir, "python.exe");
     }
 
     if (File(config.defaultPythonPath).existsSync()) {
@@ -168,18 +175,25 @@ Future<void> initializeApp(PythonShellConfig config, bool createDefaultEnv) asyn
             String pipInstallFile = path.join(tempDir, "get-pip.py");
             await Dio().download("https://bootstrap.pypa.io/pip/get-pip.py", pipInstallFile);
             Process.runSync(config.defaultPythonPath, [ pipInstallFile ]);
-            Process.runSync(config.defaultPythonPath, [ "-m", "pip", "install", "virtualenv", "--upgrade" ]);
             File(pipInstallFile).deleteSync();
         }
+
+        Process.runSync(config.defaultPythonPath, [ "-m", "pip", "install", "virtualenv", "--upgrade" ]);
     }
 
     String defaultEnvDir = path.join(appDir, "defaultEnv");
-    if (!Directory(defaultEnvDir).existsSync()) {
-        config.defaultPythonEnvPath = createVirtualEnv(config, "default");
+    if (createDefaultEnv) {
+        if (!Directory(defaultEnvDir).existsSync()) {
+            var instanceMaps = createShellInstance(config, instanceName: "default");
+            config.defaultPythonEnvPath = instanceMaps["python"]!;
+        }
+        else {
+            config.defaultPythonEnvPath = getVirtualEnv(config, "default");
+        }
     }
     else {
-        config.defaultPythonEnvPath = Platform.isWindows ? path.join(defaultEnvDir, "Scripts", "python.exe") : path.join(defaultEnvDir, "bin", "python");
-        installRequiresToEnv(config, config.defaultPythonEnvPath!);
+        // config.defaultPythonEnvPath = Platform.isWindows ? path.join(defaultEnvDir, "Scripts", "python.exe") : path.join(defaultEnvDir, "bin", "python");
+        installRequiresToEnv(config, config.defaultPythonPath);
     }
 }
 
@@ -187,12 +201,12 @@ void installRequiresToEnv(PythonShellConfig config, String envPython, { List<Str
     pythonRequires = pythonRequires ?? config.pythonRequires;
 
     if (config.pythonRequireFile != null) {
-        Process.runSync(envPython, [ "-m", "pip", "install", "-r", config.pythonRequireFile! ], runInShell: true);
+        Process.runSync(envPython, [ "-m", "pip", "install", "-r", config.pythonRequireFile! ]);
     }
     else if (pythonRequires != null) {
         String tempPythonRequireFile = path.join(config.tempDir!, "${DateFormat("yyyy.MM.dd.HH.mm.ss").format(DateTime.now())}.txt");
         File(tempPythonRequireFile).writeAsStringSync(pythonRequires.join("\n"));
-        Process.runSync(envPython, [ "-m", "pip", "install", "-r", tempPythonRequireFile ], runInShell: true);
+        Process.runSync(envPython, [ "-m", "pip", "install", "-r", tempPythonRequireFile ]);
         File(tempPythonRequireFile).deleteSync();
     }
 }

@@ -1,0 +1,12 @@
+._*
+.*
+.dart_tool
+.idea
+*sync-conflict*
+env*
+node_modules
+obj
+bin
+build
+Debug
+Release

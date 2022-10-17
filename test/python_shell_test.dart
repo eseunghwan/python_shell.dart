@@ -8,7 +8,7 @@ void main() {
 
         setUpAll(() async {
             // Additional setup goes here.
-            await shell.initialize();
+            await shell.initialize(createDefaultEnv: true);
 
             print(shell.config.defaultPythonPath);
             print(shell.config.defaultPythonVersion);

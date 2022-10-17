@@ -104,7 +104,7 @@ class PythonShell {
             }
         }
         else {
-            process = await Process.start(config.defaultPythonEnvPath!, [ "-u", pythonFile ], mode: ProcessStartMode.detachedWithStdio, workingDirectory: config.defaultWorkingDirectory ?? workingDirectory, runInShell: true);
+            process = await Process.start(config.defaultPythonEnvPath ?? config.defaultPythonPath, [ "-u", pythonFile ], mode: ProcessStartMode.detachedWithStdio, workingDirectory: config.defaultWorkingDirectory ?? workingDirectory);
             _runningProcesses.add(process);
 
             if (echo) {
@@ -147,8 +147,13 @@ class PythonShell {
     Future<Process> runString(String pythonCode, { bool useInstance = false, String? instanceName, bool echo = true, ShellListener? listener }) async {
         String tempPythonFileName = "${DateFormat("yyyy.MM.dd.HH.mm.ss").format(DateTime.now())}.py", tempPythonFile;
         if (useInstance) {
-            if (instanceName != null && instanceName.toLowerCase() == "default") {
-                tempPythonFile = path.join(config.tempDir!, tempPythonFileName);
+            if (instanceName != null) {
+                if (instanceName.toLowerCase() == "default") {
+                    tempPythonFile = path.join(config.instanceDir!, "default", "temp", tempPythonFileName);
+                }
+                else {
+                    tempPythonFile = path.join(config.tempDir!, tempPythonFileName);
+                }
             }
             else {
                 var instanceMaps = instanceName == null ? createShellInstance(config) : getShellInstance(config, instanceName);

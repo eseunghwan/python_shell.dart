@@ -24,3 +24,10 @@
 ## 0.0.4
 - remove 'flutter' dependencies from 'pubspec'(for pub informations)
 - 'clear' function now removes sub directories, files from 'temp' not removes itself.
+
+<br />
+
+## 0.0.5
+- Recognize the 'createDefaultInstance' parameter normally.
+- Now 'default' instance uses the temp folder.
+- Fixing bugs that occur in windows.
