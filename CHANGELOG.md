@@ -38,3 +38,10 @@
 - change python_shell app directory to '.python_shell.dart'
 - move 'test.py' file into 'test' directory and fix test.dart file
 - add logs.
+
+<br />
+
+## 0.0.7
+- change directionality of library.
+- add 'ShellManager', 'ShellInstance'.
+- update 'README.md'

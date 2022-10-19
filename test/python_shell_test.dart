@@ -4,18 +4,11 @@ import "dart:io";
 
 void main() {
     group("python-shell tests", () {
-        final PythonShell shell = PythonShell(shellConfig: PythonShellConfig());
+        final PythonShell shell = PythonShell(PythonShellConfig());
 
         setUpAll(() async {
             // Additional setup goes here.
-            await shell.initialize(createDefaultEnv: true);
-
-            print(shell.config.defaultPythonPath);
-            print(shell.config.defaultPythonVersion);
-            print(shell.config.defaultPythonEnvPath);
-            print(shell.config.pythonRequireFile);
-            print(shell.config.pythonRequires);
-            print("tests: \n");
+            await shell.initialize();
         });
 
         test("runString", () async {
@@ -29,13 +22,17 @@ void main() {
         });
 
         test("runString with new instance", () async {
-            await shell.runString("print('in python!')", useInstance: true);
+            var instance = ShellManager.createInstance();
+            await shell.runString("print('in python!')", instance: instance);
+            instance.remove();
         });
 
         test("runFile with new instance", () async {
             var pythonFile = File("test/test.py");
             pythonFile.writeAsStringSync("print('in python!')");
-            await shell.runFile(pythonFile.path, useInstance: true);
+            var instance = ShellManager.createInstance();
+            await shell.runFile(pythonFile.path, instance: instance);
+            instance.remove();
         });
 
         tearDownAll(() {

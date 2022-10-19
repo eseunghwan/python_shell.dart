@@ -47,11 +47,18 @@ dependencies:
 import "package:python_shell/python_shell.dart";
 
 var shell = PythonShell();
-await shell.initializeShell();
+await shell.initialize();
 
-shell.runString("{pythonCode}");
+await shell.runString("{pythonCode}");
 ```
+- use instance
+```dart
+import "package:python_shell/python_shell.dart";
 
+PythonShell().initialize();
+var instance = ShellManager.getInstance("default");
+await instance.runString("{pythonCode}");
+```
 <br />
 
 - onMessage, onError, onComplete
@@ -60,14 +67,14 @@ shell.runString("{pythonCode}");
 shell.runString(
     "{pythonCode}",
     listener: ShellListener(
-        messageCallback: (message) {
+        onMessage: (message) {
             // if `echo` is `true`, log to console automatically
             print("message!");
         },
-        errorCallback: (e, s) {
+        onError: (e, s) {
             print("error!");
         },
-        completeCallback: () {
+        onComplete: () {
             print("complete!");
         }
     )

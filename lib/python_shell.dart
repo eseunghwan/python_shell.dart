@@ -1,4 +1,7 @@
 
 library python_shell;
 
-export "src/shell.dart";
+export "src/python_shell.dart";
+export "src/listener.dart";
+export "src/shell/manager.dart";
+export "src/shell/instance.dart";
