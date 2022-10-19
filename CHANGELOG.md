@@ -37,3 +37,4 @@
 ## 0.0.6
 - change python_shell app directory to '.python_shell.dart'
 - move 'test.py' file into 'test' directory and fix test.dart file
+- add logs.

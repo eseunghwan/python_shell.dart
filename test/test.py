@@ -1,1 +1,1 @@
-print("in python!")
+print('in python!')

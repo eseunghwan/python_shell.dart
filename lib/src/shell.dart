@@ -20,7 +20,7 @@ class PythonShell {
 
     bool get resolved => _runningProcesses.isEmpty;
 
-    void clear({ String instanceName = "default" }) {
+    void clear() {
         var instances = Directory(config.instanceDir!).listSync().whereType<Directory>().toList();
         instances.where(
             (instanceDir) => path.basename(instanceDir.path) != "default"
@@ -50,7 +50,7 @@ class PythonShell {
         Process process;
 
         if (useInstance) {
-            var instanceMaps = instanceName == null ? createShellInstance(config, instanceName: instanceName) : getShellInstance(config, instanceName);
+            var instanceMaps = instanceName == null ? createShellInstance(config, instanceName: instanceName, echo: echo) : getShellInstance(config, instanceName);
             process = await Process.start(instanceMaps["python"]!, [ "-u", pythonFile ], mode: ProcessStartMode.detachedWithStdio, workingDirectory: config.defaultWorkingDirectory ?? workingDirectory);
             _runningProcesses.add(process);
 
