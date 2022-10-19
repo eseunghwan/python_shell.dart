@@ -136,7 +136,7 @@ Future<void> initializeApp(PythonShellConfig config, bool createDefaultEnv) asyn
     config.defaultPythonVersion = checkPythonVersion(config.defaultPythonVersion);
 
     String? userHomeDir = Platform.environment[Platform.isWindows ? "USERPROFILE" : "HOME"];
-    String appDir = path.join(userHomeDir!, ".python_shell");
+    String appDir = path.join(userHomeDir!, ".python_shell.dart");
     if (!Directory(appDir).existsSync()) {
         Directory(appDir).createSync(recursive: true);
     }

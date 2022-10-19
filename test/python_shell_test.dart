@@ -23,7 +23,7 @@ void main() {
         });
 
         test("runFile", () async {
-            var pythonFile = File("test.py");
+            var pythonFile = File("test/test.py");
             pythonFile.writeAsStringSync("print('in python!')");
             await shell.runFile(pythonFile.path);
         });
@@ -33,7 +33,7 @@ void main() {
         });
 
         test("runFile with new instance", () async {
-            var pythonFile = File("test.py");
+            var pythonFile = File("test/test.py");
             pythonFile.writeAsStringSync("print('in python!')");
             await shell.runFile(pythonFile.path, useInstance: true);
         });
