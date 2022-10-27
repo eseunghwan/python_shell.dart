@@ -83,4 +83,4 @@ shell.runString(
 
 <br />
 
-for further informations, refers to [shell.dart](https://github.com/eseunghwan/python_shell.dart/blob/master/lib/src/shell.dart)
+for further informations, refers to [python_shell.dart](https://github.com/eseunghwan/python_shell.dart/blob/master/lib/src/python_shell.dart)
