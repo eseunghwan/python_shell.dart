@@ -22,10 +22,16 @@ class ShellInstance {
     if (echo) print("Installing requirements...");
     String tempPythonRequireFile = path.join(tempDir, "requirements.txt");
     File(tempPythonRequireFile).writeAsStringSync(pythonRequires.join("\n"));
-    Process.runSync(
+    ProcessResult pipInstallRequirements = Process.runSync(
       pythonPath,
       ["-m", "pip", "install", "-r", tempPythonRequireFile],
     );
+    if (pipInstallRequirements.exitCode != 0) {
+      print(
+          'Error for createVirtualEnv, exist code ${pipInstallRequirements.exitCode}\n'
+          'Stdout: ${pipInstallRequirements.stdout}\nStderr: ${pipInstallRequirements.stderr}');
+    }
+
     File(tempPythonRequireFile).deleteSync();
     if (echo) print("Requirements installed.");
   }

@@ -53,16 +53,34 @@ class PythonShell {
       print("Default settings for virtualenv...");
       var result = Process.runSync(config.defaultPythonPath,
           ["-m", "pip", "install", "pip", "--upgrade"]);
+      if (result.exitCode != 0) {
+        print('Error for result, exist code ${result.exitCode}\n'
+            'Stdout: ${result.stdout}\nStderr: ${result.stderr}');
+      }
+
       if (result.stderr.toString().trim() != "") {
         String pipInstallFile = path.join(config.tempDir, "get-pip.py");
         await Dio().download(
             "https://bootstrap.pypa.io/pip/get-pip.py", pipInstallFile);
-        Process.runSync(config.defaultPythonPath, [pipInstallFile]);
+        ProcessResult pipInstallFileProcess =
+            Process.runSync(config.defaultPythonPath, [pipInstallFile]);
+        if (pipInstallFileProcess.exitCode != 0) {
+          print(
+              'Error for pipInstallFile, exist code ${pipInstallFileProcess.exitCode}\n'
+              'Stdout: ${pipInstallFileProcess.stdout}\nStderr: ${pipInstallFileProcess.stderr}');
+        }
         File(pipInstallFile).deleteSync();
       }
 
-      Process.runSync(config.defaultPythonPath,
+      ProcessResult virtualEnvUpgrade = Process.runSync(
+          config.defaultPythonPath,
           ["-m", "pip", "install", "virtualenv", "--upgrade"]);
+      if (virtualEnvUpgrade.exitCode != 0) {
+        print(
+            'Error for virtualEnvUpgrade, exist code ${virtualEnvUpgrade.exitCode}\n'
+            'Stdout: ${virtualEnvUpgrade.stdout}\nStderr: ${virtualEnvUpgrade.stderr}');
+      }
+
       print("Virtualenv settings finished.");
     }
 
